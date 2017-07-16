@@ -10,6 +10,8 @@ using TogglRedmine.Extensions;
 using TogglRedmine.Model.Redmine;
 using TogglRedmine.Model.Toggl;
 using System.Text.RegularExpressions;
+using TogglRedmine.Repositories;
+using TogglRedmine.Configuration;
 
 namespace TogglRedmine
 {
@@ -19,15 +21,18 @@ namespace TogglRedmine
         private readonly IRedmineClient _redmineClient;
         private readonly ILogger<App> _logger;
         private readonly Dictionary<string,int> _projectNameMapping;
+        private readonly AppStatusSettingsContext _dbContext;
 
         public App(
             IRedmineClient redmineClient, 
-            ITogglClient togglClient, 
+            ITogglClient togglClient,
+            AppStatusSettingsContext dbContext,
             ILogger<App> logger,
             IOptions<Dictionary<string,int>> projectNameMappingOptions)
         {
             _togglClient = togglClient;
             _redmineClient = redmineClient;
+            _dbContext = dbContext;
             _logger = logger;
             _projectNameMapping = projectNameMappingOptions.Value;
         }
@@ -36,39 +41,50 @@ namespace TogglRedmine
         {
             using (var togglRepo = new ReportsRepository(_togglClient))
             using (var redmineRepo = new TimeEntriesRepository(_redmineClient))
+            using (var appState = new AppStateRepository(_dbContext))
             {
                 int counter = 0;
 
-                var reports = togglRepo.GetAll().GetAwaiter().GetResult();
-                _logger.LogInformation($"Found {reports.Count} reports for today.");  
-                
+                var state = appState.GetState();
+
+                var reports = togglRepo.GetAll(state.LastSynchronized).GetAwaiter().GetResult();
+                _logger.LogInformation($"Found {reports.Count} reports for today.");
+
                 foreach (var report in reports)
                 {
                     var timeInHours = report.GetDurationInHours();
                     try
                     {
                         var issueId = ExtractIssueId(report);
-                        _logger.LogInformation($"{counter++} Logging {timeInHours} hours on issue {issueId}...");   
-                        // redmineRepo.Add(new TimeEntry()
-                        //     {
-                        //        Issue = new Issue { Id = issueId },
-                        //        Activity = new Activity { Id = 9 },
-                        //        Comments = $"toggl - {report.Description}",
-                        //        SpentOn = report.Start.UtcDateTime,
-                        //        Hours = timeInHours,
-                        //     }).GetAwaiter().GetResult();                        
-                    } 
+                        _logger.LogInformation($"{counter++} Logging {timeInHours} hours on issue {issueId}...");
+                        redmineRepo.Add(new TimeEntry()
+                        {
+                            Issue = new Issue { Id = issueId },
+                            Activity = new Activity { Id = 9 },
+                            Comments = $"toggl - {report.Description}",
+                            SpentOn = report.Start.UtcDateTime,
+                            Hours = timeInHours,
+                        }).GetAwaiter().GetResult();
+                    }
                     catch (KeyNotFoundException ex)
                     {
                         _logger.LogInformation($"{counter++} Skipping {report.Id}: {ex.Message}");
-                        continue;                       
+                        continue;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogInformation($"Unexpected error on report {report.Id}: {ex.Message}"); 
+                        _logger.LogInformation($"Unexpected error on report {report.Id}: {ex.Message}");
                     }
                 }
-            }            
+
+                _logger.LogInformation($"Persisting state to state db...");
+
+                state.LastSynchronized = DateTimeOffset.UtcNow;
+                appState.SetState(state);
+
+                _logger.LogInformation($"All done for today!");
+
+            }
         }
 
         private int ExtractIssueId(DetailedReport report)

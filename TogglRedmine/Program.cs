@@ -52,8 +52,12 @@ namespace TogglRedmine
             serviceCollection.AddTransient<IRedmineClient, RedmineClient>();
             serviceCollection.AddTransient<ITogglClient, TogglClient>();
 
+            // add state db
+            serviceCollection.AddDbContext<AppStatusSettingsContext>();
+
             // add app
             serviceCollection.AddTransient<App>();
+
         }
     }
 }

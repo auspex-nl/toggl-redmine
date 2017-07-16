@@ -8,6 +8,6 @@ namespace TogglRedmine.Clients
 {
     public interface ITogglClient
     {
-        Task<DetailedReportsResponse> GetDetailedReports();
+        Task<DetailedReportsResponse> GetDetailedReports(string since = "");
     }
 }

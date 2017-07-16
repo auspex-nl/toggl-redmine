@@ -36,15 +36,20 @@ namespace TogglRedmine.Clients
             return new AuthenticationHeaderValue("Basic", encodedUserPass);
         }
 
-        private string AddRequiredQueryParams(string requestUri)
+        private string AddRequiredQueryParams(string requestUri, string since = "")
         {
-            return $"{requestUri}?workspace_id={_settings.WorkspaceId}&user_agent={_settings.UserAgent}";
+            var url = $"{requestUri}?workspace_id={_settings.WorkspaceId}&user_agent={_settings.UserAgent}";
+            if (!string.IsNullOrWhiteSpace(since))
+            {
+                url += $"&since={since}";
+            }
+            return url;
         }
 
-        public async Task<DetailedReportsResponse> GetDetailedReports()
+        public async Task<DetailedReportsResponse> GetDetailedReports(string since = "")
         {
 
-            var result = await _httpClient.GetAsync(AddRequiredQueryParams("reports/api/v2/details"));
+            var result = await _httpClient.GetAsync(AddRequiredQueryParams("reports/api/v2/details", since));
 
             if (result.IsSuccessStatusCode)
             {

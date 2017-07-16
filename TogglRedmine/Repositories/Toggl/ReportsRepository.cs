@@ -23,6 +23,13 @@ namespace TogglRedmine.Repositories.Toggl
             return result.Data;
         }
 
+        public async Task<DetailedReportCollection> GetAll(DateTimeOffset since)
+        {
+            var result = await _togglClient.GetDetailedReports(since.LocalDateTime.ToString("yyyy-MM-dd"));
+
+            return result.Data;
+        }
+
 
         #region IDisposable Support
         private bool disposedValue = false;
