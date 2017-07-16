@@ -1,0 +1,26 @@
+﻿{
+  "togglSettings": {
+    "apiToken": "",
+    "workspaceId": "",
+    "userAgent": "toggl-redmine"
+  },
+  "redmineSettings": {
+    "apiToken": ""
+  },
+  "projectNameMapping": {
+    "Meetings": 27506,
+    "Support": 27507
+  },
+  "logging": {
+    "includeScopes": "true",
+    "logLevel": {
+      "Default": "Debug",
+      "System": "Information",
+      "Microsoft": "Information"
+    }
+  },
+  "status": {
+    "lastSynchronized": ""
+  }
+
+}
