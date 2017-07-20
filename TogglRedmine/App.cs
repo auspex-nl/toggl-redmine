@@ -47,8 +47,8 @@ namespace TogglRedmine
 
                 var state = appState.GetState();
 
-                var reports = togglRepo.GetAll(state.LastSynchronized).GetAwaiter().GetResult();
-                _logger.LogInformation($"Found {reports.Count} reports for today.");
+                var reports = togglRepo.GetAll(state.LastSynchronized.AddDays(1)).GetAwaiter().GetResult();
+                _logger.LogInformation($"Found {reports.Count} reports since last synced date: {state.LastSynchronized}.");
 
                 foreach (var report in reports)
                 {
