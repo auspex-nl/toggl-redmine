@@ -39,7 +39,7 @@ namespace TogglRedmine.Clients
         private string AddRequiredQueryParams(string requestUri, string since = "", long userId = -1)
         {
             var selectedUserId = userId != -1 ? userId : Convert.ToInt64(_settings.UserId);
-            var url = $"{requestUri}?workspace_id={_settings.WorkspaceId}&user_agent={_settings.UserAgent}&uid={selectedUserId}";
+            var url = $"{requestUri}?workspace_id={_settings.WorkspaceId}&user_agent={_settings.UserAgent}&user_ids={selectedUserId}";
             if (!string.IsNullOrWhiteSpace(since))
             {
                 url += $"&since={since}";
