@@ -40,6 +40,7 @@ namespace TogglRedmine
         public void Run()
         {
             using (var togglRepo = new ReportsRepository(_togglClient))
+            using (var togglUserRepo = new UserRepository(_togglClient))
             using (var redmineRepo = new TimeEntriesRepository(_redmineClient))
             using (var appState = new AppStateRepository(_dbContext))
             {
@@ -47,7 +48,10 @@ namespace TogglRedmine
 
                 var state = appState.GetState();
 
-                var reports = togglRepo.GetAll(state.LastSynchronized.AddDays(1)).GetAwaiter().GetResult();
+                
+                var userInfo = togglUserRepo.GetInfo();
+
+                var reports = togglRepo.GetAll(state.LastSynchronized.AddDays(1), userId: userInfo.Id).GetAwaiter().GetResult();
                 _logger.LogInformation($"Found {reports.Count} reports since last synced date: {state.LastSynchronized}.");
 
                 foreach (var report in reports)

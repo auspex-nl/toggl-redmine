@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,29 +7,21 @@ using TogglRedmine.Model.Toggl;
 
 namespace TogglRedmine.Repositories.Toggl
 {
-    public class ReportsRepository : IDisposable
+    public class UserRepository : IDisposable
     {
         private ITogglClient _togglClient;
 
-        public ReportsRepository(ITogglClient togglClient)
+        public UserRepository(ITogglClient togglClient)
         {
             _togglClient = togglClient;
         }
 
-        public async Task<DetailedReportCollection> GetAll(long userId = -1)
+        public async Task<User> GetInfo()
         {
-            var result = await _togglClient.GetDetailedReports(userId: userId);
+            var result = await _togglClient.GetUserInfo();
 
             return result.Data;
         }
-
-        public async Task<DetailedReportCollection> GetAll(DateTimeOffset since, long userId = -1)
-        {
-            var result = await _togglClient.GetDetailedReports(since.LocalDateTime.ToString("yyyy-MM-dd"), userId);
-
-            return result.Data;
-        }
-
 
         #region IDisposable Support
         private bool disposedValue = false;

@@ -36,9 +36,10 @@ namespace TogglRedmine.Clients
             return new AuthenticationHeaderValue("Basic", encodedUserPass);
         }
 
-        private string AddRequiredQueryParams(string requestUri, string since = "")
+        private string AddRequiredQueryParams(string requestUri, string since = "", long userId = -1)
         {
-            var url = $"{requestUri}?workspace_id={_settings.WorkspaceId}&user_agent={_settings.UserAgent}&uid={_settings.UserId}";
+            var selectedUserId = userId != -1 ? userId : Convert.ToInt64(_settings.UserId);
+            var url = $"{requestUri}?workspace_id={_settings.WorkspaceId}&user_agent={_settings.UserAgent}&uid={selectedUserId}";
             if (!string.IsNullOrWhiteSpace(since))
             {
                 url += $"&since={since}";
@@ -46,15 +47,29 @@ namespace TogglRedmine.Clients
             return url;
         }
 
-        public async Task<DetailedReportsResponse> GetDetailedReports(string since = "")
+        public async Task<DetailedReportsResponse> GetDetailedReports(string since = "", long userId = -1)
         {
 
-            var result = await _httpClient.GetAsync(AddRequiredQueryParams("reports/api/v2/details", since));
+            var result = await _httpClient.GetAsync(AddRequiredQueryParams("reports/api/v2/details", since, userId));
 
             if (result.IsSuccessStatusCode)
             {
                 var content = await result.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<DetailedReportsResponse>(content);
+            }
+
+            throw new HttpRequestException($"Invalid response: {result.StatusCode}");
+        }
+
+        public async Task<UserResponse> GetUserInfo()
+        {
+
+            var result = await _httpClient.GetAsync("api/v8/me");
+
+            if (result.IsSuccessStatusCode)
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<UserResponse>(content);
             }
 
             throw new HttpRequestException($"Invalid response: {result.StatusCode}");
