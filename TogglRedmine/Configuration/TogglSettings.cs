@@ -9,5 +9,6 @@ namespace TogglRedmine.Configuration
         public string ApiToken { get; set; }
         public string WorkspaceId { get; set; }
         public string UserAgent { get; set; }
+        public string UserId { get; set; }
     }
 }

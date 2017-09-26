@@ -2,14 +2,15 @@
   "togglSettings": {
     "apiToken": "",
     "workspaceId": "",
+    "userId": "",
     "userAgent": "toggl-redmine"
   },
   "redmineSettings": {
     "apiToken": ""
   },
   "projectNameMapping": {
-    "Meetings": 27506,
-    "Support": 27507
+    "Meetings": 28522,
+    "Support": 28517
   },
   "logging": {
     "includeScopes": "true",
