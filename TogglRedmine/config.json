@@ -2,7 +2,6 @@
   "togglSettings": {
     "apiToken": "",
     "workspaceId": "",
-    "userId": "",
     "userAgent": "toggl-redmine"
   },
   "redmineSettings": {
@@ -21,3 +20,4 @@
     }
   }
 }
+

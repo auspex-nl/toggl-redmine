@@ -48,18 +48,23 @@ namespace TogglRedmine
 
                 var state = appState.GetState();
 
-                
                 var userInfo = togglUserRepo.GetInfo().GetAwaiter().GetResult();
 
-                var reports = togglRepo.GetAll(state.LastSynchronized.AddDays(1), userId: userInfo.Id).GetAwaiter().GetResult();
+                var reports = togglRepo.GetAll(state.LastSynchronized, userId: userInfo.Id).GetAwaiter().GetResult();
                 _logger.LogInformation($"Found {reports.Count} reports since last synced date: {state.LastSynchronized}.");
 
                 foreach (var report in reports)
                 {
-                    var timeInHours = report.GetDurationInHours();
                     try
                     {
+                        var timeInHours = report.GetDurationInHours();
                         var issueId = ExtractIssueId(report);
+
+                        if (report.End < state.LastSynchronized) {
+                            _logger.LogInformation($"{counter++} Skipping {timeInHours} hours for issue {issueId}, already imported...");
+			    continue;
+		        }
+
                         _logger.LogInformation($"{counter++} Logging {timeInHours} hours on issue {issueId}...");
                         redmineRepo.Add(new TimeEntry()
                         {
